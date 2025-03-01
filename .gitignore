@@ -1,0 +1,27 @@
+# Bỏ qua thư mục PyCharm
+.idea/
+*.iml
+
+# Bỏ qua thư viện ảo
+venv/
+env/
+.venv/
+
+# Bỏ qua file biên dịch Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Bỏ qua các file log và tạm thời
+*.log
+*.tmp
+.DS_Store
+
+# Bỏ qua các file cache của pytest và mypy
+.mypy_cache/
+.pytest_cache/
+
+# Nếu sử dụng Docker
+docker-compose.override.yml
+
