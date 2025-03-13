@@ -1,33 +1,29 @@
 import math
 import cv2
-import os
-import time
 import numpy
 import hand
-
-# Volume
+import pyautogui
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
-# Lấy thông tin âm lượng hệ thống
+# Thiết lập điều khiển âm lượng
 devices = AudioUtilities.GetSpeakers()
-interface = devices.Activate(
-    IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
 volume = interface.QueryInterface(IAudioEndpointVolume)
-volume.GetMute()
-volume.GetMasterVolumeLevel()
-volumeRange = volume.GetVolumeRange()
-minVolume = volumeRange[0]
-maxVolume = volumeRange[1]
+minVolume, maxVolume = volume.GetVolumeRange()[:2]
 
-sTime = 0
+# Thiết lập camera
 cap = cv2.VideoCapture(0)
-
 detector = hand.handDetector(detectionCon=0.7)
 fingerId = [4, 8, 12, 16, 20]
 
+# Biến trạng thái
 mode = ''
 adjusting = False
+auto_scroll = False
+x, y = pyautogui.position()
+prev_y = None
+scale_factor = 0.5
 
 while True:
     ret, frame = cap.read()
@@ -40,7 +36,6 @@ while True:
     fingers = []
     if len(pointList) != 0:
 
-
         # xác định bàn tay
         wrist_x = pointList[0][1]
         thumb_x = pointList[4][1]
@@ -52,11 +47,11 @@ while True:
 
         # xác định hướng bàn tay
         if hand_side == "left":
-            if pointList[fingerId[0]][1] < pointList[fingerId[0] - 1][1]:
+            if pointList[4][1] < pointList[3][1]:
                 fingers.append(1)
             else:
                 fingers.append(0)
-        elif pointList[fingerId[0]][1] > pointList[fingerId[0] - 1][1]: # tay phai
+        elif pointList[4][1] > pointList[3][1]:
             fingers.append(1)
         else:
             fingers.append(0)
@@ -68,11 +63,15 @@ while True:
             else:
                 fingers.append(0)
 
+
     if fingers == [1, 1, 0, 0, 0]:
         mode = 'volume'
         adjusting = True
-
-
+        print('Mode volume')
+    # elif fingers == [0, 1, 1, 0, 0]:
+    #     mode = 'scroll'
+    #     auto_scroll = True
+    #     print('Mode scroll')
 
 
     if mode == "volume" and len(pointList) != 0:
@@ -93,38 +92,38 @@ while True:
         # Nếu giơ lên 3 ngón tay, dừng điều chỉnh
         if fingers.count(1) == 3:
             adjusting = False
+            mode = ''
             print("Đã khóa điều chỉnh âm lượng!")
 
-        if fingers.count(1) == 0:
-            mode = ''
-            adjusting = False
-            print("Huy che do dieu chinh volume")
 
+    # Mode = Auto Scroll
+    if fingers == [0, 1, 1, 0, 0] and not auto_scroll:
+        auto_scroll = True
+        pyautogui.mouseDown(button='middle')  # Nhấn chuột giữa
+        prev_y = pointList[12][2]  # Lưu tọa độ y của ngón giữa
+        print("Auto-Scroll ON")
 
+    if auto_scroll and len(pointList) != 0:
+        current_y = pointList[12][2] # Lấy toạ độ hiện tại của ngón giữa
 
+        if fingers[4] == 1:
+            print("⏸ Auto-Scroll")
+        else:
+            delta_y = current_y - prev_y
+            print(f'delta_y: {delta_y}')
+            # Di chuyển chuột
+            pyautogui.moveTo(x, y + delta_y, duration=0.1)
 
+        if (fingers[1] == 0 or fingers[2] == 0) and fingers[4] == 0:
+            auto_scroll = False
+            pyautogui.mouseDown(button='middle')
+            print("Auto-Scroll OFF")
 
-
-
-
-    # Calculate FPS
-    cTime = time.time() # 0:0:00s
-    fps = 1/(cTime - sTime)
-    sTime = cTime
-
-    # Show FPS
-    cv2.putText(frame,
-                f"FPS:{int(fps)}",
-                (150, 70),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                1,
-                (255, 255, 255),
-                1)
 
     cv2.imshow('Vision Control', frame)
     if cv2.waitKey(1) == ord('x'):
         break
 
 
-cap.release() # Giải phóng camera
+cap.release()
 cv2.destroyAllWindows()
