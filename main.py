@@ -21,11 +21,20 @@ fingerId = [4, 8, 12, 16, 20]
 mode = ''
 adjusting = False
 auto_scroll = False
-x, y = pyautogui.position()
 prev_y = None
-scale_factor = 0.5
+mouse_y = None
+screen_width, screen_height = pyautogui.size()  # Lấy kích thước màn hình
+
+# Giới hạn delta_y trong khoảng [-60, 60]
+finger_min = -60
+finger_max = 60
+
+# Giới hạn khoảng di chuyển chuột (tùy chỉnh để phù hợp)
+mouse_min = -180
+mouse_max = 180
 
 while True:
+    x, y = pyautogui.position()
     ret, frame = cap.read()
 
     # Xac dinh vi tri tay
@@ -86,7 +95,7 @@ while True:
         # Điều chỉnh âm lượng
         if adjusting:
             length = math.hypot(x2 - x1, y2 - y1)
-            vol = numpy.interp(length, [10, 160], (minVolume, maxVolume))
+            vol = numpy.interp(length, [15, 150], (minVolume, maxVolume))
             volume.SetMasterVolumeLevel(vol, None)
 
         # Nếu giơ lên 3 ngón tay, dừng điều chỉnh
@@ -99,25 +108,44 @@ while True:
     # Mode = Auto Scroll
     if fingers == [0, 1, 1, 0, 0] and not auto_scroll:
         auto_scroll = True
-        pyautogui.mouseDown(button='middle')  # Nhấn chuột giữa
-        prev_y = pointList[12][2]  # Lưu tọa độ y của ngón giữa
+        pyautogui.mouseDown(button='middle')
+        pyautogui.moveTo(x, screen_height // 2) # di chuyển chuột ra giữa màn hình
+        prev_y = pointList[8][2]
+        mouse_y = screen_height // 2
+        print(f"Mouse 1:::{mouse_y}")
         print("Auto-Scroll ON")
 
     if auto_scroll and len(pointList) != 0:
-        current_y = pointList[12][2] # Lấy toạ độ hiện tại của ngón giữa
+        x, y = pyautogui.position()
 
         if fingers[4] == 1:
-            print("⏸ Auto-Scroll")
+            print("Giữ nguyên vị trí chuột (ngón út giơ lên)")
+            pass
         else:
-            delta_y = current_y - prev_y
-            print(f'delta_y: {delta_y}')
-            # Di chuyển chuột
-            pyautogui.moveTo(x, y + delta_y, duration=0.1)
+            # Lấy vị trí hiện tại của chuột
+            current_y = pointList[8][2]  # Lấy tọa độ Y của ngón giữa
 
-        if (fingers[1] == 0 or fingers[2] == 0) and fingers[4] == 0:
+            # Tính delta_y (khoảng cách di chuyển của ngón giữa)
+            delta_y = current_y - prev_y
+
+            # Giới hạn delta_y trong khoảng [-60, 60]
+            # delta_y = max(finger_min, min(delta_y, finger_max))
+
+            # Ánh xạ delta_y thành khoảng di chuyển chuột
+            mapped_mouse_y = numpy.interp(delta_y, [finger_min, finger_max], [mouse_min, mouse_max])
+
+            print(f"delta_y: {delta_y}, mapped_mouse_y: {mapped_mouse_y}")
+
+            # Di chuyển chuột theo trục Y
+            pyautogui.moveTo(x, mouse_y + mapped_mouse_y, duration=0.1)
+
+            # Cập nhật vị trí trước đó của ngón giữa
+            prev_y = current_y
+            mouse_y += mapped_mouse_y  # Cập nhật vị trí chuột mới
+
+        if fingers[1] == 0 or fingers[2] == 0:
             auto_scroll = False
             pyautogui.mouseDown(button='middle')
-            print("Auto-Scroll OFF")
 
 
     cv2.imshow('Vision Control', frame)
