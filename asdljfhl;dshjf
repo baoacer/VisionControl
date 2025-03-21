@@ -1,0 +1,55 @@
+# Khởi tạo biến
+prev_x = None  # Lưu vị trí X trước đó
+alt_tab_active = False  # Kiểm tra xem Alt + Tab có đang được kích hoạt không
+
+two_hand = []
+while True:
+    ret, frame = cap.read()
+    frame = detector.findHands(frame)
+    pointList = detector.findTwoHandsPosition(frame, draw=False)
+
+    left_hand = None
+    right_hand = None
+
+    # Kiểm tra xem có tay nào không
+    for hand in pointList:
+        handType, handPoints = hand  # handType: "Left" hoặc "Right"
+        
+        if handType == "Left":
+            left_hand = handPoints  # Lưu tọa độ bàn tay trái
+        elif handType == "Right":
+            right_hand = handPoints  # Lưu tọa độ bàn tay phải
+
+    # Xác định trạng thái
+    if left_hand and right_hand:
+        print("Người dùng đang giơ CẢ HAI TAY ✋✋")
+        prev_x = None  # Reset khi có hai tay
+        alt_tab_active = False
+
+    elif left_hand:
+        print("Người dùng đang giơ TAY TRÁI ✋")
+        print(left_hand)
+
+    elif right_hand:
+        x_index_finger = right_hand[8][1]  # Tọa độ X của ngón trỏ
+
+        if prev_x is not None:  # Kiểm tra xem có dữ liệu trước đó không
+            dx = x_index_finger - prev_x
+
+            if not alt_tab_active and dx > 30:  # Kích hoạt Alt + Tab khi vuốt lần đầu
+                pyautogui.hotkey("alt", "tab")
+                alt_tab_active = True
+                print("Bắt đầu Alt + Tab")
+
+            elif alt_tab_active and dx > 30:  # Tiếp tục chuyển cửa sổ nếu đang giữ Alt
+                pyautogui.press("tab")
+                print("Nhấn Tab để chuyển cửa sổ")
+
+        prev_x = x_index_finger  # Cập nhật tọa độ X của ngón trỏ
+        print("Người dùng đang giơ TAY PHẢI 🤚")
+        print(right_hand)
+
+    else:
+        print("Không phát hiện tay nào!")
+        prev_x = None  # Reset khi không có tay nào
+        alt_tab_active = False  # Reset trạng thái Alt+Tab

@@ -35,6 +35,25 @@ class handDetector():
                     self.mpDraw.draw_landmarks(img, handLms,
                                                self.mpHands.HAND_CONNECTIONS)
         return img
+    # def findTwoHandsPosition(self, img, draw=True):
+    #     img = self.findHands(img, draw)
+    #     hands = []
+    #     imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    #     self.results = self.hands.process(imgRGB)
+    #     if self.results.multi_hand_landmarks and self.results.multi_handedness:
+    #         for idx, handLms in enumerate(self.results.multi_hand_landmarks):
+    #             lmList = []
+    #             h, w, _ = img.shape
+    #             for id, lm in enumerate(handLms.landmark):
+    #                 cx, cy = int(lm.x * w), int(lm.y * h)
+    #                 lmList.append([id, cx, cy])
+
+    #             # Xác định tay trái hoặc phải
+    #             hand_label = self.results.multi_handedness[idx].classification[0].label  # "Left" hoặc "Right"
+
+    #             hands.append((hand_label, lmList))  # Trả về tuple chứa nhãn và danh sách tọa độ
+
+    #     return hands
 
     def findPosition(self, img, handNo=0, draw=True):
 
@@ -53,28 +72,28 @@ class handDetector():
         return lmList
 
 
-def main():
-    pTime = 0
-    cTime = 0
-    cap = cv2.VideoCapture(1)
-    detector = handDetector()
-    while True:
-        success, img = cap.read()
-        img = detector.findHands(img)
-        lmList = detector.findPosition(img)
-        if len(lmList) != 0:
-            print(lmList[4])
-
-        cTime = time.time()
-        fps = 1 / (cTime - pTime)
-        pTime = cTime
-
-        cv2.putText(img, str(int(fps)), (10, 70), cv2.FONT_HERSHEY_PLAIN, 3,
-                    (255, 0, 255), 3)
-
-        cv2.imshow("Image", img)
-        cv2.waitKey(1)
-
-
-if __name__ == "__main__":
-    main()
+# def main():
+#     pTime = 0
+#     cTime = 0
+#     cap = cv2.VideoCapture(1)
+#     detector = handDetector()
+#     while True:
+#         success, img = cap.read()
+#         img = detector.findHands(img)
+#         lmList = detector.findPosition(img)
+#         if len(lmList) != 0:
+#             print(lmList[4])
+#
+#         cTime = time.time()
+#         fps = 1 / (cTime - pTime)
+#         pTime = cTime
+#
+#         cv2.putText(img, str(int(fps)), (10, 70), cv2.FONT_HERSHEY_PLAIN, 3,
+#                     (255, 0, 255), 3)
+#
+#         cv2.imshow("Image", img)
+#         cv2.waitKey(1)
+#
+#
+# if __name__ == "__main__":
+#     main()
