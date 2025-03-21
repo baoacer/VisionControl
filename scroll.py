@@ -22,6 +22,10 @@ class AutoScroll:
 
     def update(self, pointList, fingers):
         if len(pointList) >= 21:
+
+            if not self.scroll:
+                return
+
             x, y = pyautogui.position()
 
             if fingers[4] == 1:
@@ -42,12 +46,10 @@ class AutoScroll:
             self.index_y = index_current_y
             self.mouse_y += mapped_mouse_y
 
-            if fingers[1] == 0 or fingers[2] == 0:
-                self.stop()
-
     def stop(self):
-        self.scroll = False
-        pyautogui.mouseUp(button='middle')
+        if self.scroll:
+            self.scroll = False
+            pyautogui.mouseUp(button='middle')
 
 
 

@@ -38,7 +38,10 @@ while True:
         mode = 'tab'
     elif fingers == [0, 0, 0, 0, 1]:
         mode = 'shutdown'
+    elif fingers == [1, 0, 0, 0, 0]:
+        mode = 'hidden'
 
+    print(mode)
 
     if mode == 'volume':
         volume.__set__(pointList, frame, fingers)
@@ -50,8 +53,12 @@ while True:
         auto_scroll.start(pointList)
     if auto_scroll.scroll:
         auto_scroll.update(pointList, fingers)
-    # window_control.minimize_window(fingers)
+    if len(fingers) != 0:
+        if mode == 'scroll' and fingers[1] == 0 or fingers[2] == 0:
+            auto_scroll.stop()
+            mode = ''
 
+    window_control.minimize_window(fingers)
 
     if mode == 'tab':
         tab_window.__set__(pointList)
