@@ -16,17 +16,17 @@ class TabWindow:
             return None
 
         is_hand_open = (
-            self.pointList[8][2] > self.pointList[6][2] and
-            self.pointList[12][2] > self.pointList[10][2] and
-            self.pointList[16][2] > self.pointList[14][2] and
-            self.pointList[20][2] > self.pointList[18][2]
-        )
-
-        is_hand_closed = (
             self.pointList[8][2] < self.pointList[6][2] and
             self.pointList[12][2] < self.pointList[10][2] and
             self.pointList[16][2] < self.pointList[14][2] and
             self.pointList[20][2] < self.pointList[18][2]
+        )
+        print(self.pointList[8][2], self.pointList[6][2])
+        is_hand_closed = (
+            self.pointList[8][2] > self.pointList[6][2] and
+            self.pointList[12][2] > self.pointList[10][2] and
+            self.pointList[16][2] > self.pointList[14][2] and
+            self.pointList[20][2] > self.pointList[18][2]
         )
 
         if is_hand_open:

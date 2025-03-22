@@ -34,7 +34,7 @@ while True:
         mode = 'volume'
     elif fingers == [0, 1, 1, 0, 0]:
         mode = 'scroll'
-    elif fingers == [1, 1, 1, 1, 1]:
+    elif fingers == [0, 1, 1, 1, 1]:
         mode = 'tab'
     elif fingers == [0, 0, 0, 0, 1]:
         mode = 'shutdown'
@@ -56,11 +56,9 @@ while True:
     if mode == 'tab':
         tab_window.__set__(pointList)
         tab_window.execute(frame)
-        pass
 
     if mode == 'shutdown':
         shutdown.execute(fingers)
-        pass
 
     cv2.imshow('Vision Control', frame)
     if cv2.waitKey(1) == ord('x'):
