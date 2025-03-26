@@ -29,19 +29,21 @@ while True:
     frame = detector.findHands(frame)
     pointList = detector.findPosition(frame, draw=False)
     fingers = hand_gesture.detect_fingers(pointList)
-    print("DEBUG: fingers =", fingers)  
-    if fingers == [1, 1, 0, 0, 0]:
-        mode = 'volume'
-    elif fingers == [0, 1, 1, 0, 0]:
-        mode = 'scroll'
-    elif fingers == [0, 1, 1, 1, 1]:
-        mode = 'tab'
-    elif fingers == [0, 0, 0, 0, 1]:
-        mode = 'shutdown'
-    elif fingers == [1, 0, 0, 0, 0]:
-        mode = 'hidden'
+    print("DEBUG: fingers =", fingers)
+    if fingers is not None:
+        if fingers == [1, 1, 0, 0, 0]:
+            mode = 'volume'
+        if fingers == [0, 1, 1, 0, 0]:
+            mode = 'scroll'
+        if fingers == [0, 1, 1, 1, 1]:
+            mode = 'tab'
+        if fingers == [0, 0,0,0,1]:
+            mode = 'shutdown'
+        if fingers == [1, 0, 0, 0, 0]:
+            mode = 'hidden'
+    else:
+        mode = ''
 
-    print(mode)
 
     if mode == 'volume':
         volume.__set__(pointList, frame, fingers)
@@ -58,15 +60,21 @@ while True:
             auto_scroll.stop()
             mode = ''
 
-    window_control.minimize_window(fingers)
+    if mode == 'hidden':
+        window_control.minimize_window(fingers)
+        mode = ''
 
     if mode == 'tab':
-        tab_window.__set__(pointList)
+        tab_window.set_point_list(pointList)
         tab_window.execute(frame)
+
+
 
     if mode == 'shutdown':
         shutdown.execute(fingers)
 
+
+    print(mode)
     cv2.imshow('Vision Control', frame)
     if cv2.waitKey(1) == ord('x'):
         break

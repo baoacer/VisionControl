@@ -1,3 +1,6 @@
+import time
+
+
 class HandGesture:
     def __init__(self):
         self.fingerId = [4, 8, 12, 16, 20]
@@ -9,6 +12,7 @@ class HandGesture:
 
         wrist_x = pointList[0][1]
         thumb_x = pointList[4][1]
+
 
         hand_side = "left" if thumb_x < wrist_x else "right"
 
