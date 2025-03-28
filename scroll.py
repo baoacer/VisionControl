@@ -47,9 +47,8 @@ class AutoScroll:
             self.mouse_y += mapped_mouse_y
 
     def stop(self):
-        if self.scroll:
-            self.scroll = False
-            pyautogui.mouseUp(button='middle')
+        self.scroll = False
+        pyautogui.mouseUp(button='middle')
 
 
 
